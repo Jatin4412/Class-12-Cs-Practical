@@ -1,0 +1,430 @@
+from tkinter import *
+from tkinter import messagebox
+import mysql.connector as sq
+import prettytable as pr
+from datetime import datetime as dt
+
+
+def sql():
+    global x,y
+    x = sq.connect(host="localhost", user="root", password="e=m*c*c*1")
+    y = x.cursor()
+    y.execute("show databases like 'cs'")
+    for i in y:
+        check1=i
+    try:
+        check1 == None
+    except NameError:
+        y.execute("create database cs")
+        pass
+    y.execute("use cs")
+    y.execute("show tables like 'device'")
+    for i in y:
+        check2=i
+    try:
+        check2 == None
+    except NameError:
+        y.execute("create table device(Mac_address varchar(17) primary key, device_Name varchar(30) not null, device_Price integer not null, Date_of_Manufacture date not null)")
+        pass
+    y.execute("show tables like 'log'")
+    for i in y:
+        check3=i
+    try:
+        check3 == None
+    except NameError:
+        y.execute("create table log(S_no integer primary key, Mac_address varchar(17) not null, Action varchar(50) not null, Old varchar(30), New varchar(30), Time datetime not null)")
+        pass
+
+
+def home():
+    global home_frame
+    home_frame=Frame(gui,bg='maroon')
+    home_frame.pack()
+    Label(home_frame, text="Home Screen",font=('ariel',50,'underline'),fg='#FFE5B4',width=20, bg='maroon', pady=40, bd=10).pack(side='top')
+    Label(home_frame, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+    b_input=Button(home_frame, text="Input", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', relief='groove', command=_input)
+    b_input.pack(side='top')
+    b_delete=Button(home_frame, text="Delete", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', relief='groove', command=_delete)
+    b_delete.pack(side='top')
+    b_view=Button(home_frame, text="View", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', relief='groove', command=_view)
+    b_view.pack(side='top')
+    b_search=Button(home_frame, text="Search", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', relief='groove', command=_search)
+    b_search.pack(side='top')
+    b_modify=Button(home_frame, text="Modify", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', relief='groove', command=_modify)
+    b_modify.pack(side='top')
+
+
+def _input():
+    def input_data():
+        sql()
+        var = "insert into device( mac_address, device_name, device_price, date_of_manufacture) values(%s,%s,%s,%s)"
+        val = (mac_add.get(), device_name.get(), device_price.get(), date_of_manufacture.get())
+        y.execute(var,val)
+        x.commit()
+        messagebox.showinfo("Success","Data inserted Successfully")
+        log("input",mac_add.get())
+        mac_add.set('')
+        device_name.set('')
+        device_price.set('')
+        date_of_manufacture.set('')
+
+    def home_screen():
+        input_frame.destroy()
+        home()
+        
+    home_frame.destroy()
+    input_frame=Frame(gui,bg='maroon')
+    input_frame.pack()
+    Label(input_frame, text="Input Data",font=('ariel',50,'underline'),fg='#FFE5B4',width=20, bg='maroon', pady=40, bd=10).pack(side='top')
+    Label(input_frame, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+    _input_frame=Frame(input_frame)
+    _input_frame.pack(side='top')
+    mac_add=StringVar()
+    device_name=StringVar()
+    device_price=StringVar()
+    date_of_manufacture=StringVar()
+    Label(_input_frame,text="Mac Address",font=('arial',10,'bold'), bd=7, width=20,bg='maroon', fg='#FFE5B4', anchor='w').grid(row=0,column=0)
+    Entry(_input_frame, textvariable=mac_add, bd=7).grid(row=0,column=1)
+    Label(_input_frame,text="Device Name",font=('arial',10,'bold'), bd=7, width=20,bg='maroon', fg='#FFE5B4', anchor='w').grid(row=1,column=0)
+    Entry(_input_frame, textvariable=device_name, bd=7).grid(row=1,column=1)
+    Label(_input_frame, text='Device Price', font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', anchor='w').grid(row=2,column=0)
+    Entry(_input_frame, textvariable=device_price, bd=7).grid(row=2,column=1)
+    Label(_input_frame,text='Date of Manufacture', font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', anchor='w').grid(row=3,column=0)
+    Entry(_input_frame, textvariable=date_of_manufacture, bd=7).grid(row=3,column=1)
+    Label(input_frame, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+    _button=Button(input_frame, text = 'Submit',font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=input_data)
+    _button.pack(side='top')
+    _home=Button(input_frame, text="Home", font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=home_screen)
+    _home.pack(side='top')
+
+
+
+def _delete():
+    def delete_data():
+        sql()
+        var = "delete from device where mac_address = %s"
+        val=(mac_add.get(),)
+        y.execute(var,val)
+        x.commit()
+        messagebox.showinfo("Success","Data deleted Successfully")
+        log("delete",mac_add.get())
+        mac_add.set('')
+        
+    def home_screen():
+        delete_frame.destroy()
+        home()
+    
+    home_frame.destroy()
+    delete_frame=Frame(gui,bg='maroon')
+    delete_frame.pack()
+    delete_screen = Label(delete_frame, text="Delete Data",font=('ariel',50,'underline'),fg='#FFE5B4',width=20, bg='maroon', pady=40, bd=10).pack(side='top')
+    Label(delete_frame, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+    _delete_frame=Frame(delete_frame, bg='maroon')
+    _delete_frame.pack(side='top')
+    mac_add=StringVar()
+    Label(_delete_frame, text='Mac Address', font=('arial', 10, 'bold'), bd=7, width=15, bg='maroon', fg='#FFE5B4').grid(row=0,column=0)
+    Entry(_delete_frame, textvariable=mac_add, bd=7).grid(row=0,column=1)
+    Label(delete_frame, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+    _button=Button(delete_frame, text="Submit", font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=delete_data)
+    _button.pack(side='top')
+    _home=Button(delete_frame, text="Home", font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=home_screen)
+    _home.pack(side='top')
+
+
+def _view():
+    def home_screen():
+        view_frame.destroy()
+        home()
+    
+    home_frame.destroy()
+    view_frame=Frame(gui,bg='maroon')
+    view_frame.pack()
+    Label(view_frame, text="View Data",font=('ariel',50,'underline'),fg='#FFE5B4',width=20, bg='maroon', pady=30, bd=10).pack(side='top')
+    sql()
+    table = pr.PrettyTable(["Mac_Address", "device_Name", "device_Price", "Date_of_Manufacture"])
+    y.execute('select * from device')
+    for i in y:
+        table.add_row(list(i))
+    Label(view_frame,text=table, font=("consolas",12), bg='maroon', fg='#FFE5B4').pack()
+    Label(view_frame, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+    _home=Button(view_frame, text="Home", font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=home_screen)
+    _home.pack(side='top')
+    
+
+
+def _search():
+    def search_data():
+        search_frame.destroy()
+        global searched_frame
+        searched_frame=Frame(gui, bg='maroon')
+        searched_frame.pack()
+        Label(searched_frame, text="Search Data",font=('ariel',50,'underline'),fg='#FFE5B4',width=20, bg='maroon', pady=30, bd=10).pack(side='top')
+        sql()
+        var = "select * from device where mac_address = %s"
+        val = (mac_add.get(),)
+        y.execute(var,val)
+        table = pr.PrettyTable(["Mac_Address", "device_Name", "device_Price", "Date_of_Manufacture"])
+        for i in y:
+            table.add_row(list(i))
+        Label(searched_frame,text=table, font=("consolas",12), bg='maroon', fg='#FFE5B4').pack()
+        Label(searched_frame, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+        _home=Button(searched_frame, text="Home", font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=home_screen)
+        _home.pack(side='top')
+
+    
+    def home_screen():
+        try:
+            searched_frame.destroy()
+        except (NameError,TypeError):
+            pass
+        try:
+            search_frame.destroy()
+        except (NameError,TypeError):
+            pass
+        home()
+
+    
+    home_frame.destroy()
+    search_frame=Frame(gui,bg='maroon')
+    search_frame.pack()
+    Label(search_frame, text="Search Data",font=('ariel',50,'underline'),fg='#FFE5B4',width=20, bg='maroon', pady=40, bd=10).pack(side='top')
+    Label(search_frame, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+    _search_frame=Frame(search_frame, bg='maroon')
+    _search_frame.pack(side='top')
+    mac_add=StringVar()
+    Label(_search_frame, text="Mac Address", font=('arial',10,'bold'), bd=7, width=15, bg='maroon', fg='#FFE5B4').grid(row=0,column=0)
+    Entry(_search_frame, textvariable=mac_add, bd=7).grid(row=0,column=1)
+    Label(search_frame, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+    _button=Button(search_frame,text='Submit', font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=search_data)
+    _button.pack(side='top')
+    _home=Button(search_frame, text="Home", font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=home_screen)
+    _home.pack(side='top')
+    
+
+
+def _modify():
+    def modify_mac_add():
+        def _modify_mac_add():
+            sql()
+            var = "update device set mac_address = %s where mac_address = %s"
+            val = (new_mac_add.get(), mac_add.get())
+            y.execute(var,val)
+            x.commit()
+            log("modify",mac_add.get(),mac_add.get(),new_mac_add.get())
+            messagebox.showinfo("Success","Data Modified Successfully")
+            modify_mac.destroy()
+            _modify()
+            
+        modify_frame.destroy()
+        global modify_mac
+        modify_mac=Frame(gui,bg='maroon')
+        modify_mac.pack(side='top')
+        Label(modify_mac, text="Modify Data",font=('ariel',50,'underline'),fg='#FFE5B4',width=20, bg='maroon', pady=40, bd=10).pack(side='top')
+        Label(modify_mac, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+        _modify_mac=Frame(modify_mac,bg='maroon')
+        _modify_mac.pack(side='top')
+        mac_add=StringVar()
+        new_mac_add=StringVar()
+        Label(_modify_mac, text="Mac Address", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', anchor='w').grid(row=0,column=0)
+        Entry(_modify_mac, textvariable=mac_add, bd=7).grid(row=0,column=1)
+        Label(_modify_mac, text="New Mac Address", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', anchor='w').grid(row=1,column=0)
+        Entry(_modify_mac, textvariable=new_mac_add, bd=7).grid(row=1,column=1)        
+        Label(modify_mac, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+        _button=Button(modify_mac,text='Submit', font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=_modify_mac_add)
+        _button.pack(side='top')
+        _home=Button(modify_mac, text="Home", font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=home_screen)
+        _home.pack(side='top')
+
+    def modify_device_name():
+        def _modify_device_name():
+            sql()
+            _var = "select device_name from device where mac_address = %s"
+            _val = (mac_add.get(),)
+            y.execute(_var,_val)
+            for i in y:
+                old_device_name = i[0]
+            var = "update device set device_name = %s where mac_address = %s"
+            val = (new_device_name.get(), mac_add.get())
+            y.execute(var,val)
+            x.commit()
+            messagebox.showinfo("Success","Data Modified Successfully")
+            log("modify",mac_add.get(),old_device_name,new_device_name.get())
+            modify_name.destroy()
+            _modify()
+            
+        modify_frame.destroy()
+        global modify_name
+        modify_name=Frame(gui, bg='maroon')
+        modify_name.pack(side='top')
+        Label(modify_name, text="Modify Data",font=('ariel',50,'underline'),fg='#FFE5B4',width=20, bg='maroon', pady=40, bd=10).pack(side='top')
+        Label(modify_name, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+        _modify_name=Frame(modify_name, bg='maroon')
+        _modify_name.pack(side='top')
+        mac_add=StringVar()
+        new_device_name=StringVar()
+        Label(_modify_name, text="Mac Address", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', anchor='w').grid(row=0,column=0)
+        Entry(_modify_name, textvariable=mac_add, bd=7).grid(row=0,column=1)
+        Label(_modify_name, text="New Device Name", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', anchor='w').grid(row=1,column=0)
+        Entry(_modify_name, textvariable=new_device_name, bd=7).grid(row=1,column=1)
+        Label(modify_name, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+        _button=Button(modify_name,text='Submit', font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove',command=_modify_device_name)
+        _button.pack(side='top')
+        _home=Button(modify_name, text="Home", font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=home_screen)
+        _home.pack(side='top')
+
+    def modify_device_price():
+        def _modify_device_price():
+            sql()
+            _var = "select device_price from device where mac_address = %s"
+            _val = (mac_add.get(),)
+            y.execute(_var,_val)
+            for i in y:
+                old_device_price = i[0]
+            var = "update device set device_price = %s where mac_address = %s"
+            val = (new_device_price.get(), mac_add.get())
+            y.execute(var,val)
+            x.commit()
+            messagebox.showinfo("Success","Data Modified Successfully")
+            log("modify",mac_add.get(),old_device_price,new_device_price.get())
+            modify_price.destroy()
+            _modify()
+
+        modify_frame.destroy()
+        global modify_price
+        modify_price=Frame(gui, bg='maroon')
+        modify_price.pack(side='top')
+        Label(modify_price, text="Modify Data",font=('ariel',50,'underline'),fg='#FFE5B4',width=20, bg='maroon', pady=40, bd=10).pack(side='top')
+        Label(modify_price, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+        _modify_price=Frame(modify_price, bg='maroon')
+        _modify_price.pack(side='top')
+        mac_add=StringVar()
+        new_device_price=StringVar()
+        Label(_modify_price, text="Mac Address", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', anchor='w').grid(row=0,column=0)
+        Entry(_modify_price, textvariable=mac_add, bd=7).grid(row=0,column=1)
+        Label(_modify_price, text="New Device Price", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', anchor='w').grid(row=1,column=0)
+        Entry(_modify_price, textvariable=new_device_price, bd=7).grid(row=1,column=1)
+        Label(modify_price, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+        _button=Button(modify_price,text='Submit', font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=_modify_device_price)
+        _button.pack(side='top')
+        _home=Button(modify_price, text="Home", font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=home_screen)
+        _home.pack(side='top')
+
+    def modify_date_of_manufacture():
+        def _modify_date_of_manufacture():
+            sql()
+            _var=("select date_of_manufacture from device where mac_address = %s")
+            _val = (mac_add.get(),)
+            y.execute(_var,_val)
+            for i in y:
+                old_date_of_manufacture = i[0]
+            var = "update device set date_of_manufacture = %s where mac_address = %s"
+            val = (new_device_date.get(), mac_add.get())
+            y.execute(var,val)
+            x.commit()
+            messagebox.showinfo("Success","Data Modified Successfully")
+            log("modify",mac_add.get(),old_date_of_manufacture,new_device_date.get())
+            modify_date.destroy()
+            _modify()
+            
+        modify_frame.destroy()
+        global modify_date
+        modify_date=Frame(gui, bg='maroon')
+        modify_date.pack(side='top')
+        Label(modify_date, text="Modify Data",font=('ariel',50,'underline'),fg='#FFE5B4',width=20, bg='maroon', pady=40, bd=10).pack(side='top')
+        Label(modify_date, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+        _modify_date=Frame(modify_date, bg='maroon')
+        _modify_date.pack(side='top')
+        mac_add=StringVar()
+        new_device_date=StringVar()
+        Label(_modify_date, text="Mac Address", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', anchor='w').grid(row=0,column=0)
+        Entry(_modify_date, textvariable=mac_add, bd=7).grid(row=0,column=1)
+        Label(_modify_date, text="New Device Date", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', anchor='w').grid(row=1,column=0)
+        Entry(_modify_date, textvariable=new_device_date, bd=7).grid(row=1,column=1)
+        Label(modify_date, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+        _button=Button(modify_date,text='Submit', font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=_modify_date_of_manufacture)
+        _button.pack(side='top')
+        _home=Button(modify_date, text="Home", font=('arial',10,'bold'), bd=7, width=10, bg='maroon', fg='#FFE5B4', relief='groove', command=home_screen)
+        _home.pack(side='top')
+
+        
+    def home_screen():
+        try:
+            modify_date.destroy()
+        except (NameError,TypeError):
+            pass
+        try:
+            modify_price.destroy()
+        except (NameError,TypeError):
+            pass
+        try:
+            modify_name.destroy()
+        except (NameError,TypeError):
+            pass
+        try:
+            modify_mac.destroy()
+        except (NameError,TypeError):
+            pass
+        try:
+            modify_frame.destroy()
+        except (NameError,TypeError):
+            pass
+        home()
+
+  
+    home_frame.destroy()
+    modify_frame=Frame(gui,bg='maroon')
+    modify_frame.pack()
+    Label(modify_frame, text="Modify Data",font=('ariel',50,'underline'),fg='#FFE5B4',width=20, bg='maroon', pady=40, bd=10).pack(side='top')
+    Label(modify_frame, text="Dummy",font=('arial',10),fg='maroon',width=20, bg='maroon', pady=3).pack(side='top')
+    _home=Button(modify_frame, text="Mac Address", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', relief='groove', command=modify_mac_add)
+    _home.pack(side='top')
+    _home=Button(modify_frame, text="Device Name", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', relief='groove', command=modify_device_name)
+    _home.pack(side='top')
+    _home=Button(modify_frame, text="Device Price", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', relief='groove', command=modify_device_price)
+    _home.pack(side='top')
+    _home=Button(modify_frame, text="Date of Manufacture", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', relief='groove', command=modify_date_of_manufacture)
+    _home.pack(side='top')
+    _home=Button(modify_frame, text="Home", font=('arial',10,'bold'), bd=7, width=20, bg='maroon', fg='#FFE5B4', relief='groove', command=home_screen)
+    _home.pack(side='top')
+    
+
+
+def time():
+    return dt.now().strftime("%Y:%m:%d %H:%M:%S")
+
+
+def sno():
+    y.execute("select max(s_no) from log")
+    for i in y:
+        no=i
+    if no[0] == None:
+        return 1
+    else:
+        return no[0]+1
+        
+
+def log(_command,_mac_add,a='',b=''):
+    if _command == "input":
+        var = "insert into log(s_no, mac_address, action, time) values(%s,%s,%s,%s)"
+        val = (sno(),_mac_add,"New Entry",time())
+        y.execute(var,val)
+        x.commit()
+    elif _command == "delete":
+        var = "insert into log(s_no, mac_address, action, time) values(%s,%s,%s,%s)"
+        val = (sno(),_mac_add,"Entry Deleted",time())
+        y.execute(var,val)
+        x.commit()
+    elif _command == "modify":
+        var = "insert into log(s_no, mac_address, action, old, new, time) values(%s,%s,%s,%s,%s,%s)"
+        val = (sno(),_mac_add,"Data changed",a,b,time())
+        y.execute(var,val)
+        x.commit()
+
+
+gui=Tk()
+gui.configure(bg='maroon')
+gui.geometry('900x600')
+gui.title("Electronic Devices")
+gui.resizable(False,False)
+home()
+gui.mainloop()

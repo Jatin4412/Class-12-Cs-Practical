@@ -7,7 +7,7 @@ from datetime import datetime as dt
 
 def sql():
     global x,y
-    x = sq.connect(host="localhost", user="root", password="e=m*c*c*1")
+    x = sq.connect(host="localhost", user="root", password="password")
     y = x.cursor()
     y.execute("show databases like 'cs'")
     for i in y:
